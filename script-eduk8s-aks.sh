@@ -81,14 +81,17 @@ fi
      echo "####### Verify Docker Version  ###########"
      sudo apt-get install jq -y
      echo "#####################################################################################################"
+     echo "####### Creating secret tap-registry ###########"
      kubectl create ns tap-install
      export INSTALL_REGISTRY_USERNAME=$tanzunetusername
      export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
      export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
      tanzu secret registry add tap-registry --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} --server ${INSTALL_REGISTRY_HOSTNAME} --export-to-all-namespaces --yes --namespace tap-install
      tanzu package repository add tanzu-tap-repository --url registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.0.1 --namespace tap-install
+     echo "####### List the packages - Contour and certmanager  ###########"
      tanzu package available list contour.tanzu.vmware.com -n tap-install
      tanzu package available list cert-manager.tanzu.vmware.com -n tap-install
+     echo "####### Instaling cert manager and contour  ###########"
      cat <<EOF > cert-manager-rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -137,6 +140,7 @@ spec:
       prereleases: {}
 EOF
 kubectl apply -f cert-manager-install.yaml
+echo "####### Cert Manager  ###########"
 tanzu package installed get cert-manager -n tap-install
 kubectl get deployment cert-manager -n cert-manager
 cat <<EOF > contour-rbac.yaml
@@ -187,6 +191,7 @@ spec:
       prereleases: {}
 EOF
 kubectl apply -f contour-install.yaml
+echo "####### Contour Package  ###########"
 tanzu package available get contour.tanzu.vmware.com/1.18.2+tap.1 --values-schema -n tap-install
 cat <<EOF > contour-install.yaml
 apiVersion: packaging.carvel.dev/v1alpha1
@@ -219,10 +224,12 @@ EOF
 kubectl apply -f contour-install.yaml
 tanzu package installed get contour -n tap-install
 kubectl get po -n tanzu-system-ingress
-#!/bin/bash
+echo "####### Creating workshop and Training portals in EDUK8s  ###########"
 kubectl apply -k "github.com/eduk8s/eduk8s?ref=master"
 kubectl set env deployment/eduk8s-operator -n eduk8s INGRESS_DOMAIN=$domainname
-kubectl apply -f https://raw.githubusercontent.com/Eknathreddy09/lab-lc-helloworld/main/resources/workshop.yaml
-kubectl apply -f https://raw.githubusercontent.com/Eknathreddy09/lab-lc-helloworld/main/resources/training-portal.yaml
+kubectl apply -f https://raw.githubusercontent.com/Eknathreddy09/lab-lc-helloworld/main/resources/workshop.yaml   #### Change the path
+kubectl apply -f https://raw.githubusercontent.com/Eknathreddy09/lab-lc-helloworld/main/resources/training-portal.yaml   #### Change the path 
+sleep 30s
+kubectl get trainingportal
 sleep 30s
 kubectl get trainingportal
