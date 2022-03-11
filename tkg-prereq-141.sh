@@ -1,6 +1,5 @@
 #!/bin/bash
-read -p "Enter the Vmware customer connect username: " connectusername
-read -p "Enter the Vmware customer connect password: " connectpassword
+echo "######### Ensure you have downloaded Tanzu CLI, kubectl from VMware customer connect page and copied to home directory #########"
 echo "######### Installing Docker ############"
 sudo apt-get update
 sudo apt-get install  ca-certificates curl  gnupg  lsb-release
@@ -9,19 +8,10 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docke
 sudo apt-get update
 sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 sudo usermod -aG docker $USER
-echo "################# Installing vmw-cli   ###################"
-sudo docker run -itd --name vmw -e VMWUSER="$connectusername" -e VMWPASS="$connectpassword" -v ${PWD}:/files --entrypoint=sh apnex/vmw-cli
-containerid=$(sudo docker ps --filter "name=vmw" --format "{{.ID}}")
-echo $containerid
-sudo docker exec -it $containerid sh -c 'vmw-cli ls vmware_tanzu_kubernetes_grid/1_x/PRODUCT_BINARY && vmw-cli cp tanzu-cli-bundle-linux-amd64.tar /files'
-sudo docker exec -it $containerid sh -c 'vmw-cli ls vmware_tanzu_kubernetes_grid/1_x/PRODUCT_BINARY && vmw-cli cp kubectl-linux-v1.21.2+vmware.1.gz /files'
 mkdir $HOME/tanzu
 cd $HOME/tanzu
-echo "################# Copying the tar files locally ###################"
-sudo docker cp $containerid:/files/tanzu-cli-bundle-linux-amd64.tar $HOME/tanzu
-sudo docker cp $containerid:/files/kubectl-linux-v1.21.2+vmware.1.gz $HOME/tanzu
-sudo docker stop $containerid
-sudo docker rm $containerid
+cp $HOME/tanzu-cli-bundle-linux-amd64.tar $HOME/tanzu
+cp $HOME/kubectl-linux-v1.21.2+vmware.1.gz $HOME/tanzu
 echo "################# Extracting the files ###################"
 tar -xvf tanzu-cli-bundle-linux-amd64.tar
 gunzip kubectl-linux-v1.21.2+vmware.1.gz
